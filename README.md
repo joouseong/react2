@@ -1,5 +1,8 @@
 # 주우성 202230236
 
+## 9월 9일(2주차)
+### Installation
+[프로젝트 수동 생성]
 
 ---
 ## 9월 2일(1주차)
@@ -63,3 +66,15 @@ Hard link vs Symbolic link(Soft link)
 * --yes 옵션은 저장된 기본 설정이나 기본값을 사용하여 프롬프트를 건너 뜀
 * 기본 설정에서는 TypeScript, Tailwind CSS, ESLint, App Router 및 Turbopack이 활성화되며, 가져오기 별칭(@/*) 사용 그리고 AGENTS.md 파일(CLADE.md에서 참조)을 통해 코딩 에이전트가 최신 Next.js 코드를 작성하도록 안내함
 
+[시스템 요구 사항]
+* 시작하기 전에 시스템이 다음 요구 사항을 충족하는지 확인
+    - 최소 Node.js 버전: Node.js 20.9 이상
+    - 운영체제: maOS, Windows(WSL 포함) Linux
+[지원되는 브라우저]
+* Next.js는 별도의 설정 없이 최신 브라우저를 지원
+* VS Code에서는 정식 통합 브라우저를 지원하기 시작
+
+[CUI를 사용한 프로젝트 생성]
+* Next.js 앱을 가장 빠르게 생성하는 방법은 create-next-app을 사용하는 것
+* create-next-app은 모든 설정을 자동으로 해줌
+* 프로젝트를 생성하려면 pnpm create next-app 명령어 실행
