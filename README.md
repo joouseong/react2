@@ -3,6 +3,60 @@
 ## 9월 9일(2주차)
 ### Installation
 [프로젝트 수동 생성]
+* 새로운 Next.js 앱을 수동으로 생성하려면 필요한 패키지를 설치해야 함
+    > pnpm i next@latest react@latest react-dom@latest
+
+[package.json 파일에 스크립트 추가]
+* 등록한 스크립트는 애플리케이션 개발의 다양한 명령을 참조함
+    - next dev: 개발 서버를 시작
+    - next build: 프로덕션을 위한 애플리케이션 빌드
+    - next start: 프로덕션 서버를 시작
+    - next lint: ESLint를 실행
+* 이제 turbopack이 기본 번들러. Webpack을 사용하려면 next dev --webpack 또는 next build -webpack을 실행하면 됨
+
+[app 디렉토리 생성]
+* Next.js는 file-system Routing을 사용. 즉 애플리케이션의 Routing은 파일을 어떻게 구성되는가에 따라 결정됨
+* app 디렉토리를 생성하고, 그 안에 layout.tsx 파일을 생성. 이 파일은 루트 레이아웃이 됨
+* 이 파일은 필수 파일이며 <html>과 <body> 태그를 포함해야 함
+
+* 초기 콘텐츠로 사용할 홈 페이지 "app/page.tsx"를 생성
+* 사용자가 애플리케이션의 루트(/)를 방문하면 layout.tsx() 및 page.tsx 두 문서 모두 렌더링 됨
+
+오류 처리
+* 문서의 지시대로만 처리하면 오류 발생
+* 타입스크립트 환경이 아니기 때문
+* 타입스크립트 환경에서 react와 react-dom을 사용할 수 있도록 타입 정의를 제공하는 패키지를 설치해야 함
+    > pnpm add -D @types/react @types/react-dom
+* 일반 설치와 -D 설치의 차이점
+
+| 구분 | 일반설치(pnpm add <pkg>) | 개발용 설치(pnpm add -D <pkg>)|
+|---|---|---|
+| 등록위치 | package.json 내 dependencies | package.json 내 devDependencies|
+| 용도 | 실제 서비스 구동에 반드시 필요한 패키지 | 코드 빌드, 테스트, 린팅 등 개발할 때만 필요한 패키지|
+| 배포 환경 | 빌드 결과물에 포함되거나 프로덕션 서버에 설치됨 | --production 옵션 등으로 빌드/배포 시 제외 됨|
+| 대표 예시 | React, Vue, Express, Axios, Lodash 등 | TypeScript, ESLint, Pretter, Vite, Jest 등|
+
+이전 버전의 Next.js 프로젝트로 인식
+* js나 jsx로 프로젝트를 진행하려고 해도 오류 발생
+* 이런 경우 추가로 react를 import 해야 함
+
+[알아두면 좋은 정보]
+* 루트 레이아웃을 만드는 것을 잊어버린 경우, Next.js는 개발 서버를 실행할 때 자동으로 이 파일을 생성
+* 프로젝트 루트에 있는 src폴더 아래로 app 폴더 전체를 이동
+
+[public 디렉토리 생성 (선택 사항)]
+* 이미지, 글 꼴 등의 정적 리소스를 저장하기 위한 public 디렉토리를 프로젝트 루트에 생성
+* public 디렉토리를 생성하면 기본 URL(/)로 public 디렉토리 내부의 리소스를 참조할 수 있음
+* 예를 들어 public/profile.png는 /profile.png와 같이 참조 가능
+
+[개발 서버 실행] 
+1. 개발 서버를 시자갛려면 다음 명령을 실행 > pnpm dev
+2. 명령을 실행한 후 locallhost:3000로 접속하면 App을 확인 가능(수동으로 접속해야 함)
+3. app/page.tsx 파일을 편집하고 저장하면, 브라우저를 통해 업데이트된 결과 확인 가능
+
+[TypeScript 설정] 최소 typeScript 버전: v5.1.0
+* Next.js는 TypeScript를 기본적으로 지원
+* 프로젝트에 TypeScript를 추가하려면 파일 확장자를 .ts 또는 .tsx로 바꾸고 next dev명령을 실행 #
 
 ---
 ## 9월 2일(1주차)
