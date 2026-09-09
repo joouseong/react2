@@ -56,7 +56,33 @@
 
 [TypeScript 설정] 최소 typeScript 버전: v5.1.0
 * Next.js는 TypeScript를 기본적으로 지원
-* 프로젝트에 TypeScript를 추가하려면 파일 확장자를 .ts 또는 .tsx로 바꾸고 next dev명령을 실행 #
+* 프로젝트에 TypeScript를 추가하려면 파일 확장자를 .ts 또는 .tsx로 바꾸고 next dev명령을 실행
+
+[IDE 플러그인]
+* Next.js에는 사용자 정의 TypeScript 플러그인과 유형 검사기가 포함되어 있음
+* VS Code와 다른 코드 편집기에서 고급 유형 검사 및 자동 완성에 사용 가능
+
+[import 및 모듈의 절대 경로 별칭 설정]
+* Next.js에는 tsconfig.json 및 jsconfig.json 파일의 "paths" 및 "baseUrl" 옵션을 기본적으로 지원
+* 이 옵션을 사용하면 프로젝트 디렉토리를 절대 경로로 별칭하여 모듈을 더 쉽고 깔끔하게 가져올 수 있음
+* 별칭으로 import를 구성하려면 tsconfig.json 또는 jsconfig.json 파일의 baseUrl에 구성 옵션을 추가
+
+[Next.js 앱 업그레이드]
+* Next.js 버전을 최신 상태로 유지하는 것이 좋음
+* 각 릴리스에는 새로운 기능과 함꼐 보안 패치, 버그 수정 및 성능 최적화가 포함되어 있으므로 최신버전을 유지하는 것이 좋음
+
+자동 생성되는 항목
+* package.json 파일에 scripts 자동 추가 / public 디렉토리
+* TypeScript 사용(선택): tsconfig.json 파일 생성
+* ESLint 설정(선택): eslintsrc.json 대신 eslint.config.mjs 파일 생성
+* Tailwind CSS 사용(선택)
+* src 디렉토리 사용(선택)
+* App Router(선택), app/layout.tsx 파일 및 app/page.tsx
+* Turbopack 사용(선택)
+* import alias 사용(선택): No로 해도 tsconfig.json에 "path" 자동 생성
+* 수동으로 프로젝트를 생성할 때 추가적으로 해야하는 작업을 자동으로 처리해줌
+
+
 
 ---
 ## 9월 2일(1주차)
