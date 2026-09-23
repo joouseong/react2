@@ -1,6 +1,8 @@
 # 주우성 202230236
-## 9월 23일(4주차)
+## 9월 30일(5주차)
 
+---
+## 9월 23일(4주차)
 ### Link Component
 Link Component 기본 사용법
 * API Reperence > Component > Link Component의 설명
@@ -42,6 +44,74 @@ Creating a nested route(중첩 라우트 만들기)
 * 예를 들어 /blog에 대한 경로를 추가하려면 app 디렉토리에 blog라는 폴더를 만들고
 * /blog에 공개적으로 엑세스할 수 있도록 하려면 page.tsx 파일을 추가
 
+* 폴더를 계속 중첩하여 중첩된 경로를 만들 수 있음
+* 예를 들어 특정 블로그 게시물에 대한 경로를 만드려면 blog 안에 새 [slug] 폴더를 만들고 page 파일을 추가
+* 폴더 이름을 대괄호(예:[slug])로 묶으면 데이터에서 여러 페이지를 생성하는데 사용되는 동적 경로 세그먼트가 생성됨
+
+[slug]의 이해
+* slug는 사이트의 특정 페이지를 쉽게 읽을 수 있는 형태로 식별하는 URL의 일부
+* 문서의 경로 /blog/[slug]의 [slug] 부분은 불러올 데이터의 key를 말함
+* 따라서 데이터에는 slug key가 반드시 있어야 함
+* [slug]는 반드시 slug일 필요는 없음. 단, [foo]라고 했다면 데이터에 반드시 foo key(필드)가 있어야 함.
+
+* async function: 함수를 async로 선언해야 내부에서 await을 쓸 수 있음
+* await을 사용하는 이유는 서버의 데이터를 읽어올 때 타임 딜레이에 의한 오류를 방지하기 위해서
+* 매개변수 구조({params}): Next.js가 페이지를 호출할 때는 props 객체로 {params, searchParams, ...} 같은 값을 넘겨주는데, 여기서 params 만 구조 분해로 받고 있음
+* 타입{params: Promise<{slug:string}>}: TypeScript 타입 선언
+* params가 Promise(비동기 값)임을 명시하고 있음
+* await params는 params가 가리키는 Promise를 해제(reslove)해서 실제 객체 {slug: "..."}를 얻음
+
+* 데이터 소스가 크다면 .find는 O(n)이므로 DB쿼리로 바꿔야 함 
+    - O(n)은 알고리즘의 시간 복잡도가 입력 데이터의 크기 n에 비례하여 시간이나 메모리 사용량이 선형적으로 증가하는 것을 의미
+
+Nesting layouts(중첩 레이아웃)
+* 기본적으로 폴더 계층 구조의 레이아웃도 중첩되어 있음
+* 즉, 자식 prop을 통해 지식 레이아웃을 감싸게 됨
+* 특정 경로 세그먼트(폴더) 안에 레이아웃을 추가하여 레이아웃을 중첩할 수 있음
+* 예를 들어 /blog 경로에 대한 레이아웃을 만드려면 blog 폴더 안에 새 레이아웃 파일을 추가
+
+Creating a dynamic segment(동적 세그먼트 만들기)
+* 동적 세그먼트를 사용하면 데이터에서 생성된 경로를 만들 수 있음
+
+Rendering with search params(검색 매개변수를 사용한 렌더링)
+* 서버 컴포넌트 page에서는 searchParams prop을 사용하여 검색 매개변수에 엑세스할 수 있음
+
+* 무엇을 언제 사용해야 하나
+    - 페이지에 대한 데이터를 로드하기 위해 검색 매개변수가 필요한 경우(예: 페이지 매김, 데이터베이스에서 필터링) searchParams prop을 사용
+    - 검색 매개변수가 클라이언트에서만 사용되는 경우(예: props를 통해 이미 로딩된 목록을 필터링하는 경우) useSearchParams를 사용
+    - 콜백이나 이벤트 핸들러에서 new URLSearchParams(window.location.search)를 사용하여 리렌더링을 하지 않고도 검색 매개변수를 읽어올 수 있음
+
+searchParams란
+* URL의 쿼리 문자열을 읽는 방법
+* 예시 URL: /product?category=shoes&page=2
+* 여기서 category=shoes, page=2가 search parameters
+* searchParams는 컴포넌트의 props로 전달되어, 내부적으로는 URLSearchParams 처럼 작동
+
+왜 "동적 렌더링"이 되는가
+* Next.js에서 페이지는 크게 정적 또는 동적으로 렌더링 될 수 있음
+* searchParams는 요청이 들어와야만 값을 알 수 있기 때문에, Next.js는 이 페이지를 정적으로 미리 생성할 수 없고, 요청이 올 때마다 새로 렌더링해야 함
+* 따라서 해당 페이지는 자동으로 동적 렌더링으로 처리됨
+* 즉 searchParams를 사용하는 순간 Next.js는 "정적으로 미리 만들 수 없겠다" 라고 판단
+
+동적 vs 정적 렌더링 비교
+항목 | 동적 렌더링 | 정적 렌더링
+|---|---|---|
+예시 | /about, /blog (미리 생성됨) | /product?page=2 (요청 시 생성)
+장점 | 빠름, 캐싱 가능 | 유연함, 쿼리나 요청 기반 응답 가능
+searchParams 사용 | 불가능 | 가능
+
+Route 방식 비교
+1. React vs Next.js 라우팅 방식의 차이
+
+항목 | React(기본) | Next.js
+|---|---|---|
+라우팅 방식 | 수동(사용자가 직접 설정) | 자동(폴더/파일 기반)
+라우터 도구 | react-router-dom 같은 외부 라이브러리 필요 | 자체 내장된 파일 기반 라우팅 시스템
+라우트 정의 방식 | 코드에서 직접 `<Route>`로 정의 | 파일/폴더 이름으로 라우트가 자동 매핑됨
+예시 | `<Route path="/about" element={<ABOUT/>}>` | pages/about.js -> about 경로 자동 생성, app/about/page.tsx -> /about 경로 자동 생성
+
+* React는 기본적으로 라우팅 기능이 없기 때문에, 직접 라우터 라이브러리를 설치해 라우팅을 설정해야 함
+* Next.js는 자체적으로 라우팅 시스템을 내장하고 있음
 
 
 
