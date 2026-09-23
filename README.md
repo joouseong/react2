@@ -1,4 +1,51 @@
 # 주우성 202230236
+## 9월 23일(4주차)
+
+### Link Component
+Link Component 기본 사용법
+* API Reperence > Component > Link Component의 설명
+* `<Link>`는 HTML `<a>` 요소를 확장하여 프리페칭(prefetching)과 라우트 간 클라이언트 사이드 네비게이션 기능을 제공하는 React 컴포넌트
+* Next.js에서 라우트 간 이동을 위해 주로 사용되는 방법
+``` tsx
+import Link from 'next/link'
+
+export default function Page() {
+  return <Link href="/dashboard">Dashboard</Link>
+}
+```
+
+다음과 같은 prop을 <Link>컴포넌트에 전달할 수 있음
+Prop | Example | Type | Required
+|---|---|---|---|
+href | href="/dashboard" | String or Objext | yes
+replace | replace={false} | Boolean | -
+scroll | scroll={false} | Boolean | -
+prefetch | prefetch={false} | Boolean, "auto", or null | -
+onNavigate | onNavigate={(e) => {}} | Function | -
+transitionTypes | transitionTypes={['slide-in']} | string[] | -
+
+이동할 경로 또는 URL을 prop으로 전달
+
+### Layout and Pages
+Creating a nested route(중첩 라우트 만들기)
+* 중첩 라우트는 다중 URL 세그먼트로 구성된 라우트
+* 예를 들어, /blog/[slug]경로는 세 개의 세그먼트로 구성
+    - /(Root Segment)
+    - blog(Segment)
+    - [slug](Leaf Segment)
+
+    [Next.js에서]
+    * 폴더는 URL 세그먼트에 매핑되는 경로 세그먼트를 정의하는데 사용됨 #즉 폴더가 URL 세그먼트가 된다는 의미
+    * 파일(예:page 및 layout)은 세그먼트에 표시되는 UI를 만드는 데 사용됨
+    * 폴더를 중첩하면 중첩된 라우트를 만들 수 있음
+
+* 예를 들어 /blog에 대한 경로를 추가하려면 app 디렉토리에 blog라는 폴더를 만들고
+* /blog에 공개적으로 엑세스할 수 있도록 하려면 page.tsx 파일을 추가
+
+
+
+
+---
 ## 9월 16일(3주차)
 [라우팅 그룹 및 비공개 폴더]
 * 라우트 그룹을 사용하여 URL을 변경하지 않고 코드를 정리할 수 있음
