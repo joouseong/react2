@@ -1,5 +1,214 @@
 # 주우성 202230236
+
 ## 9월 30일(5주차)
+### Layout and Pages
+Route 방식 비교
+
+2. Next.js의 라우팅 방식: Pages Router vs App Router
+
+항목 | Page Router | App Router
+|---|---|---
+도입 시기 | 초기부터 존재 | Next.js 13 부터 도입
+루트 디렉토리 | pages/ | app/
+파일 기반 | pages/about.js -> /about | app/about/page.tsx -> /about
+특징 | 간단하고 익숙함(기존 React 방식과 유사) | 더 유연하고 강력한 기능 지원
+대표 기능 | 동적 라우트, getStaticProps 등 | 레이아웃 중첩, 서버 컴포넌트, 로딩 UI, 병렬 라우트 등
+추천 여부 | 유지보수 중(권장 X) | Next.js 15부터 기본 권장 방식
+
+* pages router
+    - export default function Page() 형식으로 구성
+    - 각 파일은 하나의 페이지 컴포넌트
+    - SSR/SSG 함수는 getStaticProps, getServerSideProps 등으로 처리
+
+* app router
+    - page.js 각 세그먼트의 페이지
+    - layout.js 해당 세그먼트 이하의 모든 페이지에 공통 레이아웃 적용
+    - 추가 기능: loading.js, error.js, not-found.js, route groups, parallel routes 등
+
+**App Router의 강력한 기능들**
+기능 | 설명
+|---|---|
+중첩 레이아웃 | 여러 레벨의 layout.js 파일을 통해 레이아웃을 계층적으로 구성 가능
+서버 컴포넌트(RSC) | 서버에서만 렌더링되는 컴포넌트로 성능 최적화 가능(React Server Component)
+로딩 UI | 페이지 전환 중 보여 줄 loading.js 파일 제공
+여러 UI | 특정 경로에서만 발생하는 에러를 처리할 error.js 제공
+병렬 라우팅 | 하나의 경로 안에서 탭 같은 독립적인 뷰를 병렬로 렌더링 가능
+
+**프로젝트 별 추천 방식**
+상황 | 추천 방식
+|---|---|
+새 프로젝트 시작 | App Router (app 디렉토리 기반)
+기존 프로젝트 유지보수 | pages/ 계속 사용 가능하지만, 점차 마이그레이션 필요
+React처럼 수동 라우팅이 필요한 경우 | React + react-router-dom 사용 가능(Next.js는 자동 라우팅이 기본)
+
+### Linking and Navigating
+**Introduction**
+* Next.js에서 경로(route)는 기본적으로 서버에서 렌더링 됨
+* 따라서 클라이언트는 새 경로를 표시하기 전 서버의 응답을 기다려야 하는 경우가 많음
+* Next.js에는 prefetching, streaming 그리고 client-side transitions(클라이언트 사이드 전환)기능이 기본 제공되어 네비게이션 속도가 빠르고 반응성이 뛰어남
+
+**1. How navigation works(네비게이션 작동 방식)**
+* Next.js에서 네비게잇녀이 어떻게 작동하는지 이해하려면 다음 개념에 익숙해지는 것이 좋음
+    - Server Rendering(서버 렌더링)
+    - Prefetching(프리페칭)
+    - Streaming(스트리밍)
+    - Client-side transitions(클라이언트 축 전환)
+
+**1-1. Server Rendering(서버 렌더링)**
+* Next.js에서 레이아웃과 페이지는 기본적으로 React 서버 컴포넌트
+* 초기 네비게이션 및 후속 네비게이션 할 때, 서버 컴포넌트 페이로드는 클라이언트로 전송되기 전 서버에서 생성됨
+* 서버 렌더링에는 발생 시점에 따라 두가지 유형이 있음
+    - 정적 렌더링(또는 사전 렌더링)은 빌드 시점이나 재검증 중에 발생하며, 결과는 캐시(cache)됨 <small>#재검증을 사용하면 전체 애플리케이션을 다시 빌드하지 않고도 캐시 항목을 업데이트 할 수 있음</small>
+    - 동적 렌더링은 클라이언트 요청에 대한 응답으로 요청 시점에 발생
+
+* 서버 렌더링의 단점은 클라이언트가 새 경로를 표시하기 전에 서버의 응답을 기다려야 한다는 것
+* Next.js는 사용자가 방문할 가능성이 높은 경로를 미리 가져오고(prefetching), 클라이언트 축 전환(client-side transitions)을 수행하여 지연 문제를 해결
+
+**# 알아두면 좋은 점**
+* 최초 방문을 위해 HTML이 생성됨
+* 일반적인 React 앱은 클라이언트 사이드 렌더링(CSR)만 사용하면, 처음 페이지를 방문할 때는 빈 HTML + JAvaScript 파일만 내려주고, 브라우저가 JS를 실행해야 화면이 렌더링 됨
+* 하지만 Next.js에서는:
+    - 사용자가 특정 URL을 처음 방문하면(initial visit) 서버가 해당 페이지의 HTML을 미리 생성해서 브라우저에 전달
+    - 따라서 브라우저는 JS 실행 전에도 즉시 보이는 HTML 뼈대 + 콘텐츠를 표시할 수 있음
+    - 이후에 React가 하이드레이션(hydration) 과정을 거쳐 상호작용이 가능해짐
+* 즉 "초기 방문 시에도 HTML을 생성해서 내려주기 때문에, 사용자 경험(UX)이 좋아지고 SEO(Search Engine Optimization:검색 엔진 최적화)에도 유리하다"는 의미
+
+**1-2. Prefetching(프리페칭: 미리 가져오기)**
+* 프리페칭은 사용자가 해당 경로로 이동하기 전에 백그라운드에서 해당 경로를 로드하는 프로세스
+* 사용자가 링크를 클릭하기 전에 다음 경로를 렌더링하는 데 필요한 데이터가 클라이언트 측에 이미 준비되어 있기 때문에 애플리케이션에서 경로 간 이동이 즉각적으로 느껴짐
+* Next.js는 `<Link>`컴포넌트와 연결된 경로를 자동으로 사용자 뷰포트에 미리가져옴
+* `<a>`를 사용하면 프리페칭을 하지 않음
+
+* 경로의 어느 정도를 프리페칭할지는 정적 경로인지 동적 경로인지에 따라 달라짐
+    - 정적 경로: 전체 경로가 프리페칭
+    - 동적 경로: 프리페치를 건너 뛰거나, loading.tsx가 있ㄴ느 경우 경로가 부분적으로 프리페칭됨
+
+* Next.js는 동적 라우팅을 건너뛰거나 부분적으로 프리페칭하는 방법으로 사용자가 방문하지 않을 수도 있는 경로에 대한 서버의 불필요한 작업을 방지
+* 그러나 네비게이션 전에 서버 응답을 기다리면 사용자에게 앱이 응답하지 않는다는 인상을 줄 수도 있음
+* 동적 경로에 대한 네비게이션 환경을 개선하려면 스트리밍을 사용할 수 있음
+
+**1-3. Streaming**
+* 스트리밍을 사용하면 서버가 전체 경로가 렌더링될 때까지 기다리지 않고, 동적 경로의 일부가 준비되는 즛기 클라이언트에 전송할 수 있음
+* 즉, 페이지의 일부가 아직 로드 중이더라도 사용자는 더 빨리 콘첸트를 볼 수 있음
+* 동적 경로의 경우, 부분적으로 미리 가져올 수 있다는 뜻
+* 즉, 공유 레이아웃과 로딩 스켈레톤을 미리 요청할 수 있음
+* 스트리밍을 사용하려면 라우팅 폴더에 loading.tsx 파일을 생성
+
+* Next.js는 내부적으로 page.tsx 콘텐츠를 `<Suspense>` 경계로 자동 래핑
+* 미리 가져온 대체 UI는 경로가 로드되는 동안 표시되고, 준비가 되면 실제 콘텐츠로 대체됨
+
+* 알아두면 좋은 점: `<Suspense>`를 사용하면 중첩된 컴포넌트에 대한 로딩 UI를 만들 수도 있음
+* loading.tsx의 이점:
+    - 사용자에게 즉각적인 네비게이션과 시각적 피드백을 제공
+    - 공유 레이아웃은 상호 작용이 가능하며, 네비게이션은 중단할 수 있음
+    - 개선된 핵심 웹 핵심 지표: TTFB, FCP, 및 TTI
+
+* 네비게이션 환경을 더욱 개선하기 위해 Next.js는 `<Link>` 컴포넌트를 사용하여 클라이언트 축 전환을 수행
+
+<small>
+* Web Vitals: 웹사이트의 사용자 경험을 측정하고 개선하기 위한 구글의 핵심 성능 지표
+* Core Web Vitals: 페이지 로딩 성능, 상호작용 반응성, 시각적 안정성을 측정하는 핵심 지표
+</small>
+
+**Core Web Vitals(웹 성능 지표)**
+* Next.js 공식 문서에서 이야기하는 TTFB, FCP, TTI 과거에 주로 사용하던 레거시 지표
+* "기본적인 준비가 되었는가?"를 측정
+* 이 지표들은 웹페이지가 기술적으로 로드되는 순서대로 시간을 측정
+
+* TTFB(Time To First Byte): 네트워크와 서버의 성능을 나타냄. 이 시간이 길면 서버가 느리거나 네트워크 연결에 문제가 있는 것
+* FCP(First Contentful Paint): 사용자가 "아, 페이지가 로딩되기 시작하는구나"라고 인지하는 순간. 하얀 화면에서 무언가 처음 뜰 때까지의 시간
+* TTI(Time To Interactive): 페이지가 완전히 똑똑해진 시점. 버튼을 눌렀을 때 버벅대지 않고 정상 작동할 수 있는 준비가 완료된 시간
+* 참고: 최신 성능 측정에서는 TTI의 중요도가 낮아지고 TBT(Total Blocking Time)나 INP로 대체되는 추세
+
+* LCP(Largest Contentful Paint): 뷰포트 내에서 가장 큰 페이지 요소(큰 텍스트 블록, 이미지 또는 비디오)를 표시하는 데 걸리는 시간 <small># 뷰포트: 웹페이지가 사용자가 별도의 스크롤 동작 없이 볼 수 있는 영역</small>
+* FID(First Input Delay): 사용자가 웹페이지와 상호작용을 시도하는 첫 번째 순간부터 웹페이지가 응답하는 시간
+* CLS(Cumulative Layout Shift): 방문자에게 콘텐츠가 얼마나 불안정한 지 측정한 값. 페이지에서 갑자기 발생하는 레이아웃의 변경이 얼마나 일어나는지를 측정. 즉, 레이아웃 이동(Layout Shift) 빈도를 측정
+
+**# 레이아웃 이동이 발생하는 원인**
+1. 치수가 없는 이미지
+2. 크기가 정의되지 않은 광고, Embed 및 iframe
+3. 동적 콘텐츠
+
+**# Shared layout remain interactive and navigation is interruptible**
+[Shared layouts remain interactive]
+* Next.js App Router에서는 layout.tsx가 여러 페이지 간에 공유됨
+    - 예: `/blog/page.tsx`와 `/blog/[slug]/page.tsx` 모두 `blog/layout.tsx`를 공유
+* 페이지 이동 시 layout.tsx는 다시 리렌더링되지 않고 그대로 유지되기 때문에 사이드바, 네비게이션 메뉴, 음악 플레이어 같은 UI가 새 페이지 로딩 중에도 계속 동작
+
+[navigation is interruptible]
+* Next.js는 페이지 이동 시 새로운 데이터를 불러오는데, 그 사이에 사용자가 다른 네비게이션 동작을 하면 이전 로딩을 취소 해 줌
+* 즉, 네트워크 요청이나 렌더링이 진행 중이라도 사용자가 다시 클릭하면 이전 요청은 중단되고 새로운 요청만 실행됨
+
+즉 레이아웃은 페이지 전환 중에도 계속 동작하고, 페이지 이동이 진행 중이어도 다른 이동 요청이 들어오면 취소 가능하다는 의미
+
+**1-4. Client-side transitions(클라이언트 축 전환)**
+* 일반적으로 서버 렌더링 페이지로 이동하면 전체 페이지가 로드
+    - 이로 인해 state가 삭제되고, 스크롤 위치가 재설정되며, 상호작용이 차단됨
+* Next.js는 `<Link>` 컴포넌트를 사용하는 클라이언트 축 전환을 통해 이를 방지. 페이지를 다시 로딩하는 대신 다음과 같은 방법으로 콘텐츠를 동적으로 업데이트
+    - 공유 레이아웃과 UI를 유지
+    - 현재 페이지를 미리 가져온(prefetching) 로딩 상태 또는 사용 가능한 경우 새 페이지로 바꿈
+* 클라이언트 축 전환은 서버에서 렌더링된 앱을 클라이언트에서 렌더링된 앱처럼 느껴지게 하는 요소
+* 또한 프리페칭 및 스트리밍과 함께 사용하면 동적 경로에서도 빠른 전환이 가능
+
+**2. 전환을 느리게 만드는 요인은 무엇인가**
+* Next.js는 최적화를 통해 네비게이션 속도가 빠르고 반응성이 뛰어남
+* 하지만 특정 조건에서는 전환 속도가 여전히 느릴 수 있음
+
+**2-1. 동적 경로 없는 loading.tsx**
+* 동적 경로로 이동할 때 클라이언트는 결과를 표시하기 전에 서버의 응답을 기다려야 함
+    - 이로 인해 사용자는 앱이 응답하지 않는다는 인상을 받을 수 있음
+* 부분 프리페칭을 활성화하고, 즉시 네비게이션을 트리고하고, 경로가 렌더링되는 동안 로딩 UI를 표시하려면 동적 경로에 loading.tsx를 추가하는 것이 좋음
+* 알아두면 좋은 정보: 개발 모드에서 Next.js 개발자 도구를 사용하여 경로가 정적인지 동적인지 확인할 수 있음
+
+**2-2. 동적 세그먼트 없는 generateStaticParams**
+* 동적 세그먼트는 사전 렌더링될 수 있지만, generateStaticParams가 누락되어 사전 렌더링되지 않는 경우, 해당 경로는 요청 시점에 동적 렌더링으로 대체됨
+* generateStaticParams를 추가하여 빌드 시점에 경로가 정적으로 생성되도록 함
+
+**# generateStaticParams를 사용하지 않는 경우**
+``` tsx
+// generateStaticParams가 없는 경우
+// blog2의 동적 라우트로 각 포스트의 slug에 대응하는 페이지를 렌더링
+// 이 라우트는 generateStaticParams를 사용하지 않으므로 빌드타임이 아닌 런타임에
+// params가 전달됨. App Router에서는 params가 Promise로 전달될 수 있으니
+// 안전하게 사용하려면 await params로 값을 해제해야 함
+
+import { posts } from "../posts";
+
+export default async function Posts({
+    params,
+}: {
+    // 런타임에서 전달되는 params는 Promise 형태일 수 있음
+    params: Promise<{slug: string}>;
+}) {
+    // params를 await하여 실제 slug값을 얻음
+    // (generateStaticParams가 없는 경우 런타임에서 슬러그를 해석하기 때문)
+    const { slug } = await params; //params 해제
+    const post = posts.find((p) => p.slug === slug);
+
+    // 포스트를 찾지 못하면 간단한 404 메세지 반환
+    // 실제 프로젝트에서는 Next.js의 notFound()를 호출하거나
+    // 커스텀 404 컴포넌트를 렌더링하는 편이 좋음
+    if(!post) {
+        // 404 처리
+        return (
+            <h1>게시글을 찾을 수 없습니다.</h1>
+        )
+    }
+
+    return (
+        <article>
+            <h1>{post.title}</h1>
+            <p>{post.content}</p>
+        </article>
+    )
+}
+```
+
+**# generateStaticParams를 사용하는 경우**
+``` tsx
+
+```
+
 
 ---
 ## 9월 23일(4주차)
@@ -112,8 +321,6 @@ Route 방식 비교
 
 * React는 기본적으로 라우팅 기능이 없기 때문에, 직접 라우터 라이브러리를 설치해 라우팅을 설정해야 함
 * Next.js는 자체적으로 라우팅 시스템을 내장하고 있음
-
-
 
 ---
 ## 9월 16일(3주차)
