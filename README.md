@@ -1,5 +1,13 @@
 # 주우성 202230236
 
+## 11월 25일(12주차)
+
+### Fetching Data
+
+**use Hook을 사용한 실습**
+
+---
+
 ## 11월 18일(11주차)
 
 ### Server and Client Component
@@ -14,7 +22,173 @@
   - 자동 전환(autoplay)
   - 반응형(responsive)
   - 지원터치/스와이프 제어(touch/swipe)
-  - 가상화(virtualization)
+  - 가상화(virtualization) 및 지연 로딩(lazy loading)
+  - 접근성(accessibility) 기능
+  - 고급 애니메이션 및 3D 효과 등
+
+- src/components/Gallery.tsx
+
+  ```tsx
+  "use client";
+
+  import "./styles.css";
+  import { Carousel } from "acme-carousel";
+
+  export default function Gallery() {
+    const items = [
+      {
+        id: "1",
+        src: "https://picsum.photos/id/1015/800/600",
+        alt: "Landscape 1",
+      },
+      {
+        id: "2",
+        src: "https://picsum.photos/id/1016/800/600",
+        alt: "Landscape 2",
+      },
+      {
+        id: "3",
+        src: "https://picsum.photos/id/1018/800/600",
+        alt: "Landscape 3",
+      },
+    ];
+
+    return (
+      <Carousel
+        items={items}
+        autoplay={{ enabled: true, interval: 2000, pauseOnHover: true }}
+        infinite
+      />
+    );
+  }
+  ```
+
+[라이브러리 작성자를 위한 조언]
+
+- component 라이브러리를 빌드하는 경우, client 전용 기능에 의존하는 진입점에 'use client' 지시문을 추가
+- 이렇게 하면 사용자가 래퍼를 만들 필요 없이 component를 server component로 가져올 수 있음
+
+- 일부 번들러는 'use client' 지시어를 제거할 수 있음
+  - React Wrap Balancer 및 Vercel Analytics 저장소에서 'use client' 지시어를 포함하도록 esbuild를 구성하는 방법의 예를 확인할 수 있음
+
+**3-7. 환경 변수 노출 예방**
+
+- JavaScript 모듈은 server 및 client 컴포넌트 모듈 간에 공유될 수 있음
+- 이 말의 의미는 실수로 server 전용 코드를 client로 가져올 수도 있다는 뜻
+- 예를들어 다음 함수를 보면
+
+  ```tsx
+  export async function getData() {
+    const res = await fetch("https://external-service.com/data", {
+      headers: {
+        authorization: process.env.API_KEY,
+      },
+    });
+
+    return res.json();
+  }
+  ```
+
+- client에 노출되어서는 안되는 API_KEY 내용이 포함되어있음
+- Next.js에서는 `NEXT_PUBLIC_`접두사가 붙은 환경 변수만 client 번들에 포함
+- 접두사가 붙지 않은 변수의 경우 Next.js에서 빈 문자열로 대체
+- 결과적으로 client에서 getData()를 가져와서 실행할 수는 있지만 예상대로 작동되지는 않음
+- client component에서 실수로 사용되는 것을 방지하려면 server-only package(서버 전용 패키지)를 사용할 수 있음
+
+- 그 다음 패키지를 서버 전용 코드가 포함된 파일로 import:
+
+  ```tsx
+  import "server-only";
+
+  export async function getData() {
+    const res = await fetch("https://external-service.com/data", {
+      headers: {
+        authorization: process.env.API_KEY,
+      },
+    });
+
+    return res.json();
+  }
+  ```
+
+- 이제 모듈을 client component로 가져오려고 하면 빌드 타임 오류 발생
+
+- 해당 client-only(클라이언트 전용) 패키지는 클라이언트 전용 로직이 포함된 모듈을 표시하는 데 사용할 수 있음 (예: window 객체에 액세스하는 코드)
+- Next.js에서 server-only 또는 client-only를 설치하는 것은 선택 사항
+- 그러나 lint 규칙에 불필요한 종속성을 표시하는 경우, 문젤ㄹ 방지하기 위해 해당 종속성을 설치할 수 있음
+
+  ```pnpm
+  pnpm add server-only
+  ```
+
+- Next.js는 server-ony 및 client-only 모듈 import를 내부적으로 처리하여, 모듈이 잘못된 환경에서 사용될 경우 더 명학한 오류 메ㅣ지를 제공
+- PM에서 제공하는 관련 패키지의 내용은 Next.js에서 사용되지 않음
+
+### Fetching Data
+
+**1. Fetching Data (데이터 가져오기)**
+
+**1-1 서버 컴포넌트**
+
+- 서버 컴포넌트에서 데이터를 fetch하는 방법은 두 가지가 있음
+  1. fetch API
+  2. ORM 또는 데이터베이스
+
+  [ 1. fetch API 사용 ]
+  - 데이터를 가져오려면 fetch API를 사용하여 컴포넌트를 비동기식 함수로 변환하고 다음 fetch의 호출을 기다림. 예를 들어:
+    ```tsx
+    export default async function Page() {
+      const data = await fetch("https://api.vercel.app/blog");
+      const posts = await data.json();
+      return (
+        <ul>
+          {posts.map((post) => (
+            <li key={post.id}>{post.title}</li>
+          ))}
+        </ul>
+      );
+    }
+    ```
+
+  [알아두면 좋은 정보]
+  - fetch 응답은 기본적으로 캐싱되지 않음
+  - 그러나 Next.js는 라우팅 페이지를 미리 렌더링하고, 성능 향상을 위해 출력은 캐싱됨
+  - 동적 렌더링을 사용하려면 `{cache: 'no-store'}`옵션을 사용
+  - 개발 중에는 가시성과 디버깅을 개선하기 위해 fetch 호출을 기록할 수 있음
+
+  [ 2. ORM 또는 데이터베이스 사용 ]
+  - 서버 컴포넌트는 서버에서 렌더링 되기 때문에 ORM이나 데이터베이스 클라이언트를 사용해서 안전하게 데이터베이스 쿼리를 실행할 수 있음
+  - 컴포넌트를 비동기 함수로 변환하고 호출을 기다리면 됨
+
+    ```tsx
+    import { db, posts } from "@/lib/db";
+
+    export default async function Page() {
+      const allPosts = await db.select().from(posts);
+      return (
+        <ul>
+          {allPosts.map((post) => (
+            <li key={post.id}>{post.title}</li>
+          ))}
+        </ul>
+      );
+    }
+    ```
+
+  - <small>ORM(Object-Relational Mapping)은 객체 지향 프로그래밍 언어와 관계형 데이터베이스 간의 데이터를 자동으로 변환해주는 기술 </small>
+
+**1-2. 클라이언트 컴포넌트**
+
+- 클라이언트 컴포넌트에서 데이터를 fetch하는 방법은 두 가지가 있음
+  1. React의 use Hook
+  2. SWR 또는 React 쿼리와 같은 통신 라이브러리
+
+  [ 1. use Hook 을 사용한 스트리밍 데이터 ]
+  - React의 use Hook을 사용하여 서버에서 클라이언트로 데이터를 스트리밍
+  - 서버 컴포넌트에서 데이터를 먼저 fetch하고, 그 결과(promise)를 클라이언트 컴포넌트에 prop으로 전달
+  - 서버 컴포넌트는 async가 가능하기 때문에 await fetch()도 사용 가능
+  - 하지만 클라이언트 컴포넌트에서는 async가 불가능하기 때문에 직접 fetch가 불가능(렌더링 중 fetch 금지)
+  - 이런 이유 때문에 서버에서 fetch한 결과를 prop으로 넘기고, 클라이언트에서는 use(promise)를 써서 데이터를 가져옴
 
 ---
 
